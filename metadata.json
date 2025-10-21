@@ -1,0 +1,5 @@
+{
+  "name": "AI Job & Skill Recommender",
+  "description": "Upload your resume to get AI-powered job recommendations, skill gap analysis, and a personalized learning roadmap.",
+  "requestFramePermissions": []
+}
