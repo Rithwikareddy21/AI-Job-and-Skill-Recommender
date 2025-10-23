@@ -1,18 +1,28 @@
 import React from 'react';
 import type { AnalysisResult } from '../types';
 import Chatbot from '../components/Chatbot';
-import { Bot, Info } from 'lucide-react';
+import { Bot, Info, ArrowLeft } from 'lucide-react';
 
 interface ChatPageProps {
   analysisContext: AnalysisResult | null;
+  onNavigateBack: () => void;
 }
 
-const ChatPage: React.FC<ChatPageProps> = ({ analysisContext }) => {
+const ChatPage: React.FC<ChatPageProps> = ({ analysisContext, onNavigateBack }) => {
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Bot className="w-8 h-8 text-primary-500" />
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">AI Career Advisor Chat</h1>
+    <div className="page-animation">
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <Bot className="w-8 h-8 text-primary-500" />
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">AI Career Advisor Chat</h1>
+        </div>
+        <button 
+          onClick={onNavigateBack}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Roadmap
+        </button>
       </div>
       
       {analysisContext ? (

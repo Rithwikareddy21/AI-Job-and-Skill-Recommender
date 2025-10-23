@@ -12,6 +12,7 @@ export interface LearningResource {
 export interface SkillToLearn {
   skill: string;
   reason: string;
+  estimatedTimeline: string;
   learningRoadmap: LearningResource[];
 }
 
@@ -28,5 +29,14 @@ export interface JobRecommendation {
 export interface AnalysisResult {
   summary: string;
   extractedSkills: string[];
+  domainStrength: string;
+  experienceLevel: string;
   jobRecommendations: JobRecommendation[];
+}
+
+export interface MarketInsights {
+    summary: string;
+    trendingSkills: string[];
+    salaryRanges: string;
+    hiringCompanies: string[];
 }

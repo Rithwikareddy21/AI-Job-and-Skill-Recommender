@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { AnalysisResult } from '../types';
+import type { AnalysisResult, MarketInsights } from '../types';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable is not set");
@@ -19,9 +19,17 @@ const responseSchema: any = {
       description: "A list of all key technical and soft skills identified from the resume or provided by the user.",
       items: { type: Type.STRING },
     },
+    domainStrength: {
+      type: Type.STRING,
+      description: "Identify the primary domain of expertise from the resume (e.g., 'Web Development', 'Data Science', 'AI/ML', 'Cybersecurity')."
+    },
+    experienceLevel: {
+      type: Type.STRING,
+      description: "Estimate the candidate's experience level (e.g., 'Entry-Level', 'Mid-Level', 'Senior')."
+    },
     jobRecommendations: {
       type: Type.ARRAY,
-      description: "A list of 3-4 suitable job roles for the candidate.",
+      description: "A list of 3 suitable job roles for the candidate.",
       items: {
         type: Type.OBJECT,
         properties: {
@@ -33,12 +41,13 @@ const responseSchema: any = {
           matchingSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of the user's skills that are relevant to this specific job." },
           skillsToLearn: {
             type: Type.ARRAY,
-            description: "For this specific job, a list of 2-3 important skills the user is missing.",
+            description: "For this specific job, a list of the top 2-3 most critical skills the user is missing to be a strong candidate. This field is mandatory and should not be empty unless the user's profile is a 100% perfect match for all job requirements.",
             items: {
                 type: Type.OBJECT,
                 properties: {
                     skill: { type: Type.STRING, description: "The name of the missing skill." },
                     reason: { type: Type.STRING, description: "A short explanation of why this skill is important for this job role." },
+                    estimatedTimeline: { type: Type.STRING, description: "An estimated timeline to learn this skill (e.g., '2-4 weeks', '1 month')."},
                     learningRoadmap: {
                         type: Type.ARRAY,
                         description: "A list of 2 learning resources for the skill.",
@@ -53,7 +62,7 @@ const responseSchema: any = {
                         }
                     }
                 },
-                required: ["skill", "reason", "learningRoadmap"],
+                required: ["skill", "reason", "estimatedTimeline", "learningRoadmap"],
             }
           }
         },
@@ -61,7 +70,7 @@ const responseSchema: any = {
       },
     },
   },
-  required: ["summary", "extractedSkills", "jobRecommendations"],
+  required: ["summary", "extractedSkills", "domainStrength", "experienceLevel", "jobRecommendations"],
 };
 
 export const analyzeResume = async (input: string | { inlineData: { data: string; mimeType: string; } } | string[]): Promise<AnalysisResult> => {
@@ -73,11 +82,13 @@ export const analyzeResume = async (input: string | { inlineData: { data: string
     Your analysis must be structured and detailed, adhering to the following goals:
     1.  **Professional Summary**: Synthesize the user's experience into a concise, 2-3 sentence professional summary.
     2.  **Skill Extraction**: Identify and list all relevant technical and soft skills.
-    3.  **Job Recommendations**: Suggest 3-4 highly suitable job roles based on the profile.
-    4.  **In-Depth Role Analysis**: For EACH job recommendation, you are required to provide:
+    3.  **Domain Strength**: Identify the primary professional domain (e.g., 'Web Development', 'Data Science').
+    4.  **Experience Level**: Estimate the experience level (e.g., 'Entry-Level', 'Senior').
+    5.  **Job Recommendations**: Suggest 3 highly suitable job roles based on the profile.
+    6.  **In-Depth Role Analysis**: For EACH job recommendation, you are required to provide:
         a. **Matching Skills**: A list of the user's existing skills that align with the requirements for THAT specific job.
-        b. **Skill Gaps**: A list of the top 2-3 critical skills the user needs to acquire for THAT specific job.
-        c. **Actionable Learning Roadmap**: For EACH identified skill gap, provide a "learning roadmap" consisting of 2 concrete online learning resources (e.g., specific YouTube tutorials, Coursera courses). Ensure the URLs provided are real and valid.
+        b. **Skill Gaps**: A list of the top 2-3 critical skills the user needs to acquire for THAT specific job. This is mandatory.
+        c. **Actionable Learning Roadmap**: For EACH identified skill gap, provide a "learning roadmap" consisting of 2 concrete online learning resources (e.g., specific YouTube tutorials, Coursera courses) AND an estimated timeline to learn the skill. Ensure the URLs provided are real and valid.
 
     The user has submitted their information as ${isSkillList ? 'a list of skills' : 'a resume document'}.
     Please generate the output exclusively in the specified JSON format.
@@ -117,4 +128,36 @@ export const analyzeResume = async (input: string | { inlineData: { data: string
     console.error("Error calling Gemini API:", error);
     throw new Error("Failed to generate analysis. The AI model could not process the request.");
   }
+};
+
+export const getMarketInsights = async (domain: string): Promise<MarketInsights> => {
+    const insightsSchema = {
+        type: Type.OBJECT,
+        properties: {
+            summary: { type: Type.STRING, description: "A brief summary of the current job market for this domain." },
+            trendingSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of top 5 trending skills in this domain." },
+            salaryRanges: { type: Type.STRING, description: "A general salary range for roles in this domain (e.g., '$80k - $120k for Mid-Level')." },
+            hiringCompanies: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of 3-5 example companies known for hiring in this domain." },
+        },
+        required: ["summary", "trendingSkills", "salaryRanges", "hiringCompanies"],
+    };
+
+    const prompt = `Provide a brief analysis of the job market for the domain: "${domain}". Focus on current trends, skills in demand, general salary expectations, and key companies that are hiring.`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: { parts: [{ text: prompt }] },
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: insightsSchema,
+                temperature: 0.3,
+            },
+        });
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText) as MarketInsights;
+    } catch (error) {
+        console.error("Error fetching market insights:", error);
+        throw new Error("Failed to generate market insights.");
+    }
 };

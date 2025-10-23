@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, LogOut, User as UserIcon, LayoutDashboard, MessageSquare } from 'lucide-react';
+import { Briefcase, LogOut, User as UserIcon, LayoutDashboard, MessageSquare, TrendingUp, Sun, Moon } from 'lucide-react';
 import type { User } from '../types';
 
 interface NavbarProps {
@@ -9,20 +9,25 @@ interface NavbarProps {
   onNavigateToDashboard: () => void;
   onNavigateToProfile: () => void;
   onNavigateToChat: () => void;
+  onNavigateToInsights: () => void;
   isAnalysisDone: boolean;
+  isJobSelected: boolean;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-const NavButton: React.FC<{onClick: () => void, children: React.ReactNode}> = ({ onClick, children }) => (
+const NavButton: React.FC<{onClick: () => void, children: React.ReactNode, disabled?: boolean}> = ({ onClick, children, disabled }) => (
   <button
     onClick={onClick}
-    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors"
+    disabled={disabled}
+    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
   >
     {children}
   </button>
 );
 
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigateHome, onNavigateToDashboard, onNavigateToProfile, onNavigateToChat, isAnalysisDone }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigateHome, onNavigateToDashboard, onNavigateToProfile, onNavigateToChat, onNavigateToInsights, isAnalysisDone, isJobSelected, theme, onToggleTheme }) => {
   return (
     <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -42,20 +47,32 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigateHome, onNavig
 
                 {isAnalysisDone && (
                   <>
-                    <NavButton onClick={onNavigateToProfile}>
+                    <NavButton onClick={onNavigateToProfile} disabled={!isJobSelected}>
                       <UserIcon className="w-4 h-4" />
-                      <span className="hidden sm:block">My Profile</span>
+                      <span className="hidden sm:block">My Progress</span>
                     </NavButton>
-                    <NavButton onClick={onNavigateToChat}>
+                     <NavButton onClick={onNavigateToInsights}>
+                        <TrendingUp className="w-4 h-4" />
+                        <span className="hidden sm:block">Insights</span>
+                    </NavButton>
+                    <NavButton onClick={onNavigateToChat} disabled={!isJobSelected}>
                       <MessageSquare className="w-4 h-4" />
                       <span className="hidden sm:block">Chat AI</span>
                     </NavButton>
                   </>
                 )}
+                
+                <button 
+                  onClick={onToggleTheme} 
+                  className="flex items-center justify-center w-9 h-8 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors"
+                  aria-label="Toggle theme"
+                >
+                  {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                </button>
 
                 <button 
                     onClick={onLogout}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50"
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/50 rounded-md hover:bg-red-200 dark:hover:bg-red-800/50"
                 >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:block">Logout</span>

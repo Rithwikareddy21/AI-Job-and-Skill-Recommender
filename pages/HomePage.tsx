@@ -7,7 +7,7 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ onStartAnalysis }) => {
   return (
-    <div className="text-center py-16">
+    <div className="text-center py-16 page-animation">
       <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
         <span className="block">Unlock Your</span>
         <span className="block bg-gradient-to-r from-primary-600 to-cyan-400 bg-clip-text text-transparent">Career Potential</span>

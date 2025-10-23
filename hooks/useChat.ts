@@ -57,13 +57,19 @@ export const useChat = ({ analysisContext }: UseChatProps) => {
         try {
             const result = await chat.sendMessageStream({ message: input });
             let text = '';
-            
-            setMessages(prev => [...prev, { role: 'model', content: '' }]);
+            let isFirstChunk = true;
 
             for await (const chunk of result) {
+                if (isFirstChunk) {
+                    // Add the model message bubble only on the first chunk to ensure loading indicator shows correctly
+                    setMessages(prev => [...prev, { role: 'model', content: '' }]);
+                    isFirstChunk = false;
+                }
+                
                 text += chunk.text;
                 setMessages(prev => {
                     const newMessages = [...prev];
+                    // Update the content of the last message, which is the model's response
                     newMessages[newMessages.length - 1].content = text;
                     return newMessages;
                 });
