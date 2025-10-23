@@ -54,8 +54,8 @@ const responseSchema: any = {
                         items: {
                             type: Type.OBJECT,
                             properties: {
-                                title: { type: Type.STRING, description: "The title of the learning resource." },
-                                url: { type: Type.STRING, description: "The URL to the resource. CRITICAL: This must be a real, valid, and publicly accessible link. Do NOT invent or hallucinate URLs. Prioritize official documentation, major educational platforms like Coursera, or specific, highly-rated YouTube tutorials." },
+                                title: { type: Type.STRING, description: "The descriptive title of the learning resource. This will be used to generate a web search, so it must be specific and accurate (e.g., 'React Hooks Crash Course - Traversy Media' or 'Official Python Documentation - Data Classes')." },
+                                url: { type: Type.STRING, description: "A unique identifier for the resource. Can be a URL, but its primary purpose is for tracking completion. The title is more important." },
                                 type: { type: Type.STRING, enum: ['YouTube', 'Coursera', 'Article', 'Other'], description: "The type of the resource." },
                             },
                             required: ["title", "url", "type"],
@@ -88,7 +88,7 @@ export const analyzeResume = async (input: string | { inlineData: { data: string
     6.  **In-Depth Role Analysis**: For EACH job recommendation, you are required to provide:
         a. **Matching Skills**: A list of the user's existing skills that align with the requirements for THAT specific job.
         b. **Skill Gaps**: A list of the top 2-3 critical skills the user needs to acquire for THAT specific job. This is mandatory.
-        c. **Actionable Learning Roadmap**: For EACH identified skill gap, provide a "learning roadmap" consisting of 2 concrete online learning resources (e.g., specific YouTube tutorials, Coursera courses) AND an estimated timeline to learn the skill. Ensure the URLs provided are real and valid.
+        c. **Actionable Learning Roadmap**: For EACH identified skill gap, provide a "learning roadmap" consisting of 2 concrete online learning resources (e.g., specific YouTube tutorials, Coursera courses) AND an estimated timeline to learn the skill. Ensure the resource TITLES are specific and searchable.
 
     The user has submitted their information as ${isSkillList ? 'a list of skills' : 'a resume document'}.
     Please generate the output exclusively in the specified JSON format.

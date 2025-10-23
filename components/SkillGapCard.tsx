@@ -1,6 +1,6 @@
 import React from 'react';
-import type { SkillToLearn } from '../types';
-import { GraduationCap, Link, Youtube, BookOpen, Clock } from 'lucide-react';
+import type { LearningResource, SkillToLearn } from '../types';
+import { GraduationCap, Search, Youtube, BookOpen, Clock } from 'lucide-react';
 
 interface SkillGapCardProps {
   skillGap: SkillToLearn;
@@ -15,11 +15,28 @@ const getIconForType = (type: string) => {
         case 'Coursera':
             return <BookOpen className="w-4 h-4 text-blue-500 flex-shrink-0" />;
         default:
-            return <Link className="w-4 h-4 text-gray-500 flex-shrink-0" />;
+            return <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />;
     }
 }
 
 const SkillGapCard: React.FC<SkillGapCardProps> = ({ skillGap, completedResources, toggleResourceCompletion }) => {
+
+  const handleResourceClick = (resource: LearningResource) => {
+    let searchUrl = '';
+    const encodedTitle = encodeURIComponent(resource.title);
+
+    switch (resource.type) {
+      case 'YouTube':
+        searchUrl = `https://www.youtube.com/results?search_query=${encodedTitle}`;
+        break;
+      default:
+        searchUrl = `https://www.google.com/search?q=${encodedTitle}`;
+        break;
+    }
+
+    window.open(searchUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/50 h-full flex flex-col">
       <h4 className="font-bold text-md text-gray-900 dark:text-white flex items-center gap-2">
@@ -33,7 +50,7 @@ const SkillGapCard: React.FC<SkillGapCardProps> = ({ skillGap, completedResource
       <p className="text-sm text-gray-600 dark:text-gray-300 my-2 flex-grow">{skillGap.reason}</p>
       <div className="space-y-2 mt-auto">
         {skillGap.learningRoadmap.map((resource, index) => {
-          const resourceId = resource.url;
+          const resourceId = resource.url; // Use URL as a stable unique ID for tracking
           const isCompleted = completedResources.has(resourceId);
           return (
             <div key={index} className="flex items-center gap-2">
@@ -42,28 +59,21 @@ const SkillGapCard: React.FC<SkillGapCardProps> = ({ skillGap, completedResource
                     id={`${resourceId}-${skillGap.skill}`} // Ensure unique ID
                     checked={isCompleted}
                     onChange={() => toggleResourceCompletion(resourceId)}
-                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                 />
-                <label htmlFor={`${resourceId}-${skillGap.skill}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer min-w-0">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 min-w-0">
                     {getIconForType(resource.type)}
-                    <a
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className={`truncate hover:underline hover:text-primary-700 dark:hover:text-primary-300 ${isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}
+                    <button
+                      onClick={() => handleResourceClick(resource)}
+                      className={`truncate text-left hover:underline hover:text-primary-700 dark:hover:text-primary-300 ${isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}
+                      title={`Search for: ${resource.title}`}
                     >
                       {resource.title}
-                    </a>
-                </label>
+                    </button>
+                </div>
             </div>
           )
         })}
-         {skillGap.learningRoadmap.length > 0 && (
-          <p className="text-xs italic text-gray-400 dark:text-gray-500 pt-2">
-            Note: AI-generated links may be inaccurate. Please verify.
-          </p>
-        )}
       </div>
     </div>
   );
