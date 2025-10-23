@@ -1,11 +1,16 @@
+// FIX: Added a triple-slash directive to include Vite's client types. This makes TypeScript aware of `import.meta.env` and resolves the error.
+/// <reference types="vite/client" />
+
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set");
+const apiKey = import.meta.env.VITE_API_KEY;
+
+if (!apiKey) {
+    throw new Error("VITE_API_KEY environment variable is not set");
 }
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey });
 
 interface Message {
   role: 'user' | 'model';
